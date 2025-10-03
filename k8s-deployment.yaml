@@ -1,0 +1,257 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: azure-rag-app
+  labels:
+    app: azure-rag-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azure-rag-app
+  template:
+    metadata:
+      labels:
+        app: azure-rag-app
+    spec:
+      containers:
+      - name: azure-rag-app
+        image: azure-rag-app:latest
+        imagePullPolicy: Never
+        env:
+        - name: AZURE_SEARCH_SERVICE_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-search-service-endpoint
+        - name: AZURE_SEARCH_ADMIN_KEY
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-search-admin-key
+        - name: AZURE_SEARCH_INDEX_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: azure-search-index-name
+        - name: AZURE_OPENAI_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-openai-endpoint
+        - name: AZURE_OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-openai-api-key
+        - name: AZURE_OPENAI_CHAT_COMPLETION_DEPLOYED_MODEL_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: azure-openai-chat-model
+        - name: AZURE_OPENAI_EMBEDDING_DEPLOYED_MODEL_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: azure-openai-embedding-model
+        - name: AZURE_STORAGE_ACCOUNT_NAME
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-storage-account-name
+        - name: AZURE_STORAGE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-storage-connection-string
+        - name: ORGANIZATION_ID
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: organization-id
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: log-level
+        - name: WEBSITE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: website-url
+        - name: APIFY_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: apify-token
+        - name: MONGODB_URL
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: mongodb-url
+        - name: MONGODB_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: mongodb-database-name
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import sys; sys.exit(0)"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        readinessProbe:
+          exec:
+            command:
+            - python
+            - -c
+            - "import sys; sys.exit(0)"
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+      volumes:
+      - name: data-volume
+        emptyDir: {}
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: azure-rag-config
+data:
+  azure-search-index-name: "default"
+  azure-openai-chat-model: "gpt-4"
+  azure-openai-embedding-model: "text-embedding-ada-002"
+  organization-id: "org_33EBz4so6OdUfUM2dPOveY3WRnF"
+  log-level: "INFO"
+  website-url: "https://example.com"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-rag-secrets
+type: Opaque
+stringData:
+  azure-search-service-endpoint: "https://your-search-service.search.windows.net"
+  azure-search-admin-key: "your_search_admin_key_here"
+  azure-openai-endpoint: "https://your-openai-resource.openai.azure.com"
+  azure-openai-api-key: "your_openai_api_key_here"
+  azure-storage-account-name: "your_storage_account_name"
+  azure-storage-connection-string: "your_storage_connection_string"
+  apify-token: "your_apify_token_here"
+  mongodb-url: "mongodb://localhost:27017"
+  mongodb-database-name: "azure_rag_knowledge"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: azure-rag-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: azure-rag-app
+        image: azure-rag-app:latest
+        imagePullPolicy: Never
+        env:
+        - name: AZURE_SEARCH_SERVICE_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-search-service-endpoint
+        - name: AZURE_SEARCH_ADMIN_KEY
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-search-admin-key
+        - name: AZURE_SEARCH_INDEX_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: azure-search-index-name
+        - name: AZURE_OPENAI_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-openai-endpoint
+        - name: AZURE_OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-openai-api-key
+        - name: AZURE_OPENAI_CHAT_COMPLETION_DEPLOYED_MODEL_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: azure-openai-chat-model
+        - name: AZURE_OPENAI_EMBEDDING_DEPLOYED_MODEL_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: azure-openai-embedding-model
+        - name: AZURE_STORAGE_ACCOUNT_NAME
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-storage-account-name
+        - name: AZURE_STORAGE_CONNECTION_STRING
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: azure-storage-connection-string
+        - name: ORGANIZATION_ID
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: organization-id
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: log-level
+        - name: WEBSITE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: azure-rag-config
+              key: website-url
+        - name: APIFY_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: apify-token
+        - name: MONGODB_URL
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: mongodb-url
+        - name: MONGODB_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: azure-rag-secrets
+              key: mongodb-database-name
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        volumeMounts:
+        - name: data-volume
+          mountPath: /app/data
+      volumes:
+      - name: data-volume
+        emptyDir: {}
+      restartPolicy: Never
+  backoffLimit: 3

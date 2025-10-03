@@ -1,0 +1,54 @@
+
+
+## 🎯 **Simple Usage Examples**
+
+### **1. Basic Setup and Query**
+```python
+# Setup RAG system
+result = setup_rag_system("my_company", "./data")
+
+# Ask a question
+answer = ask_question("my_company", "What is the main topic?")
+print(answer["answer"])
+```
+
+### **2. Add Documents**
+```python
+# Add specific files
+files = ["document1.pdf", "document2.docx"]
+result = add_documents("my_company", files)
+print(f"Processed {result['successful_files']} files")
+```
+
+### **3. Scrape Website**
+```python
+# Scrape a website
+result = scrape_website("my_company", "https://example.com")
+print(result["message"])
+```
+
+### **4. Interactive Chat**
+```python
+# Start interactive chat
+interactive_chat("my_company")
+```
+
+### **5. Get System Info**
+```python
+# Get system statistics
+info = get_system_info("my_company")
+print(f"Documents: {info['blob_count']}")
+```
+
+## 🚀 **Key Features**
+
+- ✅ **Single File**: All functionality in one wrapper
+- ✅ **Simple Functions**: Easy-to-use function calls
+- ✅ **Complete Setup**: Handles files + web scraping
+- ✅ **Interactive Chat**: Real-time Q&A
+- ✅ **Error Handling**: Comprehensive error management
+- ✅ **Rich Responses**: Detailed return information
+- ✅ **MongoDB Integration**: Full metadata tracking
+- ✅ **Production Ready**: Ready for deployment
+
+Save this code as `rag_wrapper.py` in your Azure AI Search RAG folder and you'll have a complete, simple interface to your RAG system! 🎉
